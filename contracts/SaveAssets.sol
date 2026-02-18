@@ -14,6 +14,7 @@ pragma solidity ^0.8.20;
 
 interface IERC20 {
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
+
     function transfer(address to, uint256 amount) external returns (bool);
 }
 
@@ -26,10 +27,11 @@ contract SaveAssets {
 
 
     event EtherDeposited(address indexed user, uint256 amount);
-        // Pull tokens from user
+    
     event EtherWithdrawn(address indexed user, uint256 amount);
 
     event TokenDeposited(address indexed user, address indexed token, uint256 amount);
+
     event TokenWithdrawn(address indexed user, address indexed token, uint256 amount);
 
 
@@ -44,12 +46,15 @@ contract SaveAssets {
     }
 
     function withdrawEther(uint256 _amount) external {
+
         uint256 balance = etherBalances[msg.sender];
+
         require(balance >= _amount, "Insufficient Ether balance");
 
         etherBalances[msg.sender] -= _amount;
 
         (bool success, ) = payable(msg.sender).call{value: _amount}("");
+
         require(success, "Ether transfer failed");
 
         emit EtherWithdrawn(msg.sender, _amount);
@@ -62,11 +67,13 @@ contract SaveAssets {
 
 
     function depositToken(address _token, uint256 _amount) external {
+
         require(_amount > 0, "Amount must be greater than zero");
 
         IERC20 token = IERC20(_token);
 
         bool success = token.transferFrom(msg.sender, address(this), _amount);
+
         require(success, "Token transfer failed");
 
         tokenBalances[msg.sender][_token] += _amount;
@@ -75,7 +82,9 @@ contract SaveAssets {
     }
 
     function withdrawToken(address _token, uint256 _amount) external {
+
         uint256 savedAmount = tokenBalances[msg.sender][_token];
+        
         require(savedAmount >= _amount, "Insufficient token balance");
 
         tokenBalances[msg.sender][_token] -= _amount;
